@@ -1,0 +1,20 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+    ignoreErrors:
+        # Version bridge between intervention/image 3 (read, encodeByPath) and 4
+        # (decodePath, encodeUsingPath): PHPStan only sees the installed major,
+        # so the other branch is always reported. Not reported when unmatched,
+        # because which side matches depends on the installed version.
+        -
+            message: '#^Call to an undefined method Intervention\\Image\\#'
+            path: src/Imagecache.php
+            reportUnmatched: false
+        -
+            message: '#^Call to function method_exists\(\) with Intervention\\Image\\#'
+            path: src/Imagecache.php
+            reportUnmatched: false

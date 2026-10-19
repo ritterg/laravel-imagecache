@@ -1,0 +1,43 @@
+{
+    "name": "ritterg/laravel-imagecache",
+    "description": "On-the-fly image templates for Laravel, served from a file cache. A maintained drop-in replacement for the abandoned intervention/imagecache, built on intervention/image 3 and 4.",
+    "keywords": ["laravel", "image", "imagecache", "thumbnail", "resize", "intervention"],
+    "license": "MIT",
+    "authors": [
+        { "name": "Gerold Ritter", "email": "ritter@e-hist.ch" }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^9.0|^10.0|^11.0|^12.0|^13.0",
+        "illuminate/http": "^9.0|^10.0|^11.0|^12.0|^13.0",
+        "illuminate/routing": "^9.0|^10.0|^11.0|^12.0|^13.0",
+        "intervention/image": "^3.4|^4.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+        "pestphp/pest": "^2.0|^3.0|^4.0",
+        "larastan/larastan": "^2.0|^3.0"
+    },
+    "conflict": {
+        "intervention/imagecache": "*"
+    },
+    "autoload": {
+        "psr-4": { "Ritterg\\Imagecache\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "Ritterg\\Imagecache\\Tests\\": "tests/" }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Ritterg\\Imagecache\\ImagecacheServiceProvider"]
+        }
+    },
+    "config": {
+        "allow-plugins": { "pestphp/pest-plugin": true }
+    },
+    "scripts": {
+        "test": "pest",
+        "analyse": "phpstan analyse"
+    },
+    "prefer-stable": true
+}
