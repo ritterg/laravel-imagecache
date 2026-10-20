@@ -78,6 +78,10 @@ template therefore renders anew automatically. **After changing a closure
 template run `php artisan imagecache:clear`** (e.g. in the deploy script).
 `php artisan imagecache:clear --expired` only removes files past their lifetime.
 
+The cache directory gets its own `.gitignore` (`*`, `!.gitignore`) on first
+render, so rendered images never end up in the app's repository, even with a
+custom `cache_path` inside a tracked folder. `imagecache:clear` keeps it.
+
 ## Migrating templates from intervention/image 2
 
 Closures and filter classes written for `intervention/imagecache` use the

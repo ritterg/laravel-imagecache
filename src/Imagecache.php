@@ -118,7 +118,7 @@ class Imagecache
         $deleted = 0;
         foreach (new \FilesystemIterator($dir) as $file) {
             /** @var \SplFileInfo $file */
-            if (! $file->isFile()) {
+            if (! $file->isFile() || $file->getFilename() === '.gitignore') {
                 continue;
             }
             if ($expiredOnly && $this->isFresh($file->getPathname())) {
@@ -254,6 +254,12 @@ class Imagecache
         $dir = dirname($target);
         if (! is_dir($dir) && ! @mkdir($dir, 0755, true) && ! is_dir($dir)) {
             throw new \RuntimeException("Imagecache: cannot create cache directory {$dir}.");
+        }
+
+        // Keep rendered images out of the host app's repository, whatever its .gitignore says.
+        $gitignore = $dir.DIRECTORY_SEPARATOR.'.gitignore';
+        if (! is_file($gitignore)) {
+            @file_put_contents($gitignore, "*\n!.gitignore\n");
         }
 
         $options = in_array(strtolower(pathinfo($target, PATHINFO_EXTENSION)), self::LOSSY_EXTENSIONS, true)

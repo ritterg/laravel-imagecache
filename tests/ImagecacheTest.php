@@ -184,6 +184,17 @@ it('clears the cache, optionally only expired files', function () {
     expect($this->cachedFiles())->toBeEmpty();
 });
 
+it('keeps the cache directory out of git, also after clearing', function () {
+    $this->makeImage('photo.jpg', 400, 300);
+    $this->get('/imagecache/small/photo.jpg');
+
+    $gitignore = $this->root.'/cache/.gitignore';
+    expect(file_get_contents($gitignore))->toBe("*\n!.gitignore\n");
+
+    Artisan::call('imagecache:clear');
+    expect($gitignore)->toBeFile();
+});
+
 it('supports the README mappings for contain and coverDown', function () {
     $this->makeImage('square.jpg', 400, 400);
     $this->makeImage('tiny.jpg', 200, 100);
