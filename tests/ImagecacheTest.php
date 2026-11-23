@@ -63,10 +63,12 @@ it('encodes sources without a usable extension in their sniffed format', functio
     $this->makeImage('trailing-dot.', 400, 300, 'png');
     $this->makeImage('no-extension', 400, 300);
     $this->makeImage('odd.dat', 400, 300, 'gif');
+    $this->makeImage('camera.jfif', 400, 300);
 
     expect($this->sizeOf(body($this->get('/imagecache/small/trailing-dot.')->assertOk()))['mime'])->toBe('image/png')
         ->and($this->sizeOf(body($this->get('/imagecache/small/no-extension')->assertOk()))['mime'])->toBe('image/jpeg')
-        ->and($this->sizeOf(body($this->get('/imagecache/small/odd.dat')->assertOk()))['mime'])->toBe('image/gif');
+        ->and($this->sizeOf(body($this->get('/imagecache/small/odd.dat')->assertOk()))['mime'])->toBe('image/gif')
+        ->and($this->sizeOf(body($this->get('/imagecache/small/camera.jfif')->assertOk()))['mime'])->toBe('image/jpeg');
 });
 
 it('serves the untouched file for original and download', function () {

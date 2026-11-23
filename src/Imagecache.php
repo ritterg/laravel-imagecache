@@ -28,8 +28,11 @@ class Imagecache
     /** Formats that take a quality option when encoding. */
     private const LOSSY_EXTENSIONS = ['jpg', 'jpeg', 'jfif', 'pjpeg', 'webp', 'avif', 'heic', 'heif', 'jp2', 'j2k', 'jpf', 'jpm', 'jpg2', 'j2c', 'jpc', 'jpx'];
 
-    /** Extensions intervention/image can pick an encoder for. */
-    private const ENCODABLE_EXTENSIONS = ['jpg', 'jpeg', 'pjpg', 'pjpeg', 'jfif', 'webp', 'avif', 'bmp', 'gif', 'png', 'tif', 'tiff', 'jp2', 'j2k', 'jp2k', 'jpf', 'jpm', 'jpg2', 'j2c', 'jpc', 'jpx', 'heic', 'heif'];
+    /**
+     * Extensions intervention/image can pick an encoder for, used when its
+     * FileExtension enum is unavailable. No "jfif": intervention/image 4 has no encoder for it.
+     */
+    private const ENCODABLE_EXTENSIONS = ['jpg', 'jpeg', 'pjpg', 'pjpeg', 'webp', 'avif', 'bmp', 'gif', 'png', 'tif', 'tiff', 'jp2', 'j2k', 'jp2k', 'jpf', 'jpm', 'jpg2', 'j2c', 'jpc', 'jpx', 'heic', 'heif'];
 
     /** Sniffed media type → encoder extension, for sources without a usable extension. */
     private const MIME_EXTENSIONS = [
@@ -231,7 +234,7 @@ class Imagecache
     private function targetExtension(string $source): string
     {
         $extension = strtolower(pathinfo($source, PATHINFO_EXTENSION));
-        if (in_array($extension, self::ENCODABLE_EXTENSIONS, true)) {
+        if ($this->isEncodable($extension)) {
             return $extension;
         }
 
@@ -241,6 +244,23 @@ class Imagecache
         }
 
         return self::MIME_EXTENSIONS[$info['mime']] ?? 'jpg';
+    }
+
+    /**
+     * Ask intervention/image itself where possible, so an extension it does
+     * not know (e.g. "jfif") falls back to sniffing instead of failing.
+     */
+    private function isEncodable(string $extension): bool
+    {
+        if ($extension === '') {
+            return false;
+        }
+
+        if (enum_exists(\Intervention\Image\FileExtension::class)) {
+            return \Intervention\Image\FileExtension::tryFrom($extension) !== null;
+        }
+
+        return in_array($extension, self::ENCODABLE_EXTENSIONS, true);
     }
 
     private function isFresh(string $file): bool
