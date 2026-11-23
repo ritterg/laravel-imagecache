@@ -28,6 +28,23 @@ class Imagecache
     /** Formats that take a quality option when encoding. */
     private const LOSSY_EXTENSIONS = ['jpg', 'jpeg', 'jfif', 'pjpeg', 'webp', 'avif', 'heic', 'heif', 'jp2', 'j2k', 'jpf', 'jpm', 'jpg2', 'j2c', 'jpc', 'jpx'];
 
+    /** Extensions intervention/image can pick an encoder for. */
+    private const ENCODABLE_EXTENSIONS = ['jpg', 'jpeg', 'pjpg', 'pjpeg', 'jfif', 'webp', 'avif', 'bmp', 'gif', 'png', 'tif', 'tiff', 'jp2', 'j2k', 'jp2k', 'jpf', 'jpm', 'jpg2', 'j2c', 'jpc', 'jpx', 'heic', 'heif'];
+
+    /** Sniffed media type → encoder extension, for sources without a usable extension. */
+    private const MIME_EXTENSIONS = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/gif' => 'gif',
+        'image/webp' => 'webp',
+        'image/avif' => 'avif',
+        'image/bmp' => 'bmp',
+        'image/x-ms-bmp' => 'bmp',
+        'image/tiff' => 'tif',
+        'image/heic' => 'heic',
+        'image/heif' => 'heif',
+    ];
+
     public function __construct(
         private readonly Repository $config,
         private readonly Container $container,
@@ -203,9 +220,27 @@ class Imagecache
         };
 
         $key = sha1(implode("\0", [$template, $fingerprint, $source, (string) filemtime($source), (string) filesize($source)]));
-        $extension = strtolower(pathinfo($source, PATHINFO_EXTENSION)) ?: 'img';
+        return $this->cachePath().DIRECTORY_SEPARATOR.$key.'.'.$this->targetExtension($source);
+    }
 
-        return $this->cachePath().DIRECTORY_SEPARATOR.$key.'.'.$extension;
+    /**
+     * Extension that selects the encoder. Sources without a known image
+     * extension (e.g. "photo." or "scan.dat") are encoded in their sniffed
+     * format, falling back to jpg.
+     */
+    private function targetExtension(string $source): string
+    {
+        $extension = strtolower(pathinfo($source, PATHINFO_EXTENSION));
+        if (in_array($extension, self::ENCODABLE_EXTENSIONS, true)) {
+            return $extension;
+        }
+
+        $info = @getimagesize($source);
+        if ($info === false) {
+            return 'jpg';
+        }
+
+        return self::MIME_EXTENSIONS[$info['mime']] ?? 'jpg';
     }
 
     private function isFresh(string $file): bool
